@@ -10,9 +10,7 @@ if (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET) {
 }
 
 export const authOptions: AuthOptions = {
-  // --- FIX: The PrismaAdapter is added back in. ---
-  // It is required to save user data to the database when using an OAuth provider.
-  // It works alongside the JWT session strategy.
+
   adapter: PrismaAdapter(prisma),
   providers: [
     GithubProvider({
@@ -27,14 +25,14 @@ export const authOptions: AuthOptions = {
   },
 
   callbacks: {
-    // The JWT callback is needed to add the user ID to the token
+    // to add the user ID to the token
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
-    // The session callback reads the user ID from the token
+    // reads the user ID from the token
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;

@@ -35,20 +35,27 @@ npm install
 
 Create a file named .env in the root of your project and add the following variables. You will need to get API keys from Supabase, Ticketmaster, and GitHub. (Later Geoapify).
 
-# Supabase Database Connection String
+Supabase Database Connection String:
+```bash
 DATABASE_URL="YOUR_SUPABASE_CONNECTION_STRING"
 
-# NextAuth.js secret (generate one with `openssl rand -base64 32`)
+NextAuth.js secret:
+```bash
 NEXTAUTH_SECRET="YOUR_NEXTAUTH_SECRET"
 NEXTAUTH_URL="http://localhost:3000"
+```
 
-# GitHub OAuth App Credentials
+GitHub OAuth App Credentials:
+```bash
 GITHUB_ID="YOUR_GITHUB_CLIENT_ID"
 GITHUB_SECRET="YOUR_GITHUB_CLIENT_SECRET"
+```
 
-# External API Keys
+External API Keys:
+```bash
 TICKETMASTER_API_KEY="YOUR_TICKETMASTER_API_KEY"
 GEOAPIFY_API_KEY="YOUR_GEOAPIFY_API_KEY"
+```
 
 3. Run the database migration:
 

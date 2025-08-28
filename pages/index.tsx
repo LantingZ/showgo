@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 
-// --- Type Definition for an Event ---
 type EventType = {
     id: string;
     name: string;
@@ -13,10 +12,9 @@ type EventType = {
     };
 };
 
-// --- Type for Pagination Info ---
 type PageInfo = {
     totalPages: number;
-    number: number; // Current page number (0-indexed)
+    number: number; 
 };
 
 // --- EventCard Component ---
@@ -172,7 +170,7 @@ export default function Home() {
         );
     }
 
-    // Main application UI
+    // Main UI
     return (
         <div className="container mx-auto p-4 md:p-8">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8">

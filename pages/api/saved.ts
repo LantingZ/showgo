@@ -1,14 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
-// --- FIX: Corrected the import path ---
-// The path should be relative to the current file's directory.
 import { authOptions } from "./auth/[...nextauth]"; 
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Use getServerSession for server-side authentication
+  // getServerSession for server-side authentication
   const session = await getServerSession(req, res, authOptions);
 
   if (!session?.user?.id) {

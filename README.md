@@ -3,7 +3,7 @@ Find and save upcoming events in your city.
 
 A full-stack web application built with Next.js that allows users to search for live events, save them to a personal list, and browse through paginated results.
 
-## Live Demo: Link
+## Live Demo: [Link](https://effervescent-douhua-f5dbba.netlify.app/)
 
 ## Tech Stack:
 

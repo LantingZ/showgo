@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import Image from 'next/image'; // Import the Next.js Image component
+import Image from 'next/image';
+import Link from 'next/link';
 
 // --- Type Definition for an Event ---
 type EventType = {
@@ -120,8 +121,8 @@ export default function Home() {
         fetchSavedEvents();
     }, [fetchSavedEvents]);
 
-    const handleSearch = async (page = 0) => {
-        if (!city) {
+    const handleSearch = async (cityToSearch: string, page = 0) => {
+        if (!cityToSearch) {
             setMessage("Please enter a city.");
             return;
         }
@@ -131,7 +132,7 @@ export default function Home() {
         setCurrentPage(page);
         setSuggestions([]);
 
-        const res = await fetch(`/api/search?city=${city}&page=${page}`);
+        const res = await fetch(`/api/search?city=${cityToSearch}&page=${page}`);
         const data = await res.json();
         
         setLoading(false);
@@ -140,7 +141,7 @@ export default function Home() {
             setSearchEvents(data.events);
             setPageInfo(data.pageInfo);
         } else {
-            setMessage(`No events found for "${city}".`);
+            setMessage(`No events found for "${cityToSearch}".`);
             setSearchEvents([]);
             setPageInfo({ totalPages: 0, number: 0 });
         }
@@ -148,8 +149,8 @@ export default function Home() {
 
     const handleSuggestionClick = (suggestion: string) => {
         setCity(suggestion);
-        setSuggestions([]);
-        handleSearch(0);
+        setIsInputFocused(false);
+        handleSearch(suggestion, 0);
     };
 
     const handleSave = async (eventData: EventType) => {
@@ -248,12 +249,12 @@ export default function Home() {
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
                             onFocus={() => setIsInputFocused(true)}
-                            onKeyUp={(e) => e.key === 'Enter' && handleSearch(0)}
+                            onKeyUp={(e) => e.key === 'Enter' && handleSearch(city, 0)}
                             placeholder="Enter a city (e.g., Philadelphia)" 
                             className="w-full bg-transparent p-2 text-gray-700 focus:outline-none"
                             autoComplete="off"
                         />
-                        <button onClick={() => handleSearch(0)} disabled={loading} className="bg-blue-600 text-white rounded-full px-6 py-2 font-semibold hover:bg-blue-700 transition duration-200 disabled:bg-blue-300">
+                        <button onClick={() => handleSearch(city, 0)} disabled={loading} className="bg-blue-600 text-white rounded-full px-6 py-2 font-semibold hover:bg-blue-700 transition duration-200 disabled:bg-blue-300">
                             {loading ? '...' : 'Search'}
                         </button>
                     </div>
@@ -295,7 +296,7 @@ export default function Home() {
             {view === 'search' && !loading && eventsToDisplay.length > 0 && (
                 <div className="flex justify-center items-center mt-8 space-x-4">
                     <button 
-                        onClick={() => handleSearch(currentPage - 1)} 
+                        onClick={() => handleSearch(city, currentPage - 1)} 
                         disabled={currentPage === 0}
                         className="bg-white text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -305,7 +306,7 @@ export default function Home() {
                         Page {currentPage + 1} of {pageInfo.totalPages}
                     </span>
                     <button 
-                        onClick={() => handleSearch(currentPage + 1)} 
+                        onClick={() => handleSearch(city, currentPage + 1)} 
                         disabled={currentPage + 1 >= pageInfo.totalPages}
                         className="bg-white text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

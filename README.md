@@ -42,7 +42,8 @@ DATABASE_URL="YOUR_SUPABASE_CONNECTION_STRING"
 NextAuth.js secret:
 ```bash
 NEXTAUTH_SECRET="YOUR_NEXTAUTH_SECRET"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="YOUR_NEXTAUTH_URL"
+# Use http://localhost:3000 for local development
 ```
 
 GitHub OAuth App Credentials:

@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import Image from 'next/image'; // Import the Next.js Image component
 
+// --- Type Definition for an Event ---
 type EventType = {
     id: string;
     name: string;
@@ -12,9 +14,10 @@ type EventType = {
     };
 };
 
+// --- Type for Pagination Info ---
 type PageInfo = {
     totalPages: number;
-    number: number; 
+    number: number; // Current page number (0-indexed)
 };
 
 // --- EventCard Component ---
@@ -25,7 +28,15 @@ const EventCard = ({ event, onSave, onUnsave, isSaved }: { event: EventType, onS
 
     return (
         <div className="bg-white rounded-lg overflow-hidden shadow-md flex flex-col transition-transform transform hover:-translate-y-1">
-            <img src={imageUrl} alt={event.name} className="w-full h-40 object-cover" onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/e2e8f0/4a5568?text=No+Image'; }} />
+            <div className="relative w-full h-40">
+                <Image 
+                    src={imageUrl} 
+                    alt={event.name} 
+                    layout="fill"
+                    objectFit="cover"
+                    onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/e2e8f0/4a5568?text=No+Image'; }} 
+                />
+            </div>
             <div className="p-4 flex-grow flex flex-col">
                 <h3 className="font-bold text-lg mb-1 truncate" title={event.name}>{event.name}</h3>
                 <p className="text-gray-600 text-sm mb-2">{eventDate}</p>
@@ -59,6 +70,42 @@ export default function Home() {
     const [pageInfo, setPageInfo] = useState<PageInfo>({ totalPages: 0, number: 0 });
     const [currentPage, setCurrentPage] = useState(0);
 
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [isInputFocused, setIsInputFocused] = useState(false);
+    const searchWrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (city.length < 3 || !isInputFocused) {
+            setSuggestions([]);
+            return;
+        }
+
+        const fetchSuggestions = async () => {
+            const res = await fetch(`/api/cities?text=${city}`);
+            if (res.ok) {
+                const data = await res.json();
+                setSuggestions(data);
+            }
+        };
+
+        const debounceTimer = setTimeout(() => {
+            fetchSuggestions();
+        }, 300);
+
+        return () => clearTimeout(debounceTimer);
+    }, [city, isInputFocused]);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target as Node)) {
+                setIsInputFocused(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [searchWrapperRef]);
+
+
     const fetchSavedEvents = useCallback(async () => {
         if (session) {
             const res = await fetch('/api/saved');
@@ -82,6 +129,7 @@ export default function Home() {
         setMessage('');
         setSearchEvents([]);
         setCurrentPage(page);
+        setSuggestions([]);
 
         const res = await fetch(`/api/search?city=${city}&page=${page}`);
         const data = await res.json();
@@ -96,6 +144,12 @@ export default function Home() {
             setSearchEvents([]);
             setPageInfo({ totalPages: 0, number: 0 });
         }
+    };
+
+    const handleSuggestionClick = (suggestion: string) => {
+        setCity(suggestion);
+        setSuggestions([]);
+        handleSearch(0);
     };
 
     const handleSave = async (eventData: EventType) => {
@@ -143,7 +197,6 @@ export default function Home() {
     };
 
     const isEventSaved = (eventId: string) => savedEvents.some(event => event.id === eventId);
-
     const eventsToDisplay = view === 'search' ? searchEvents : savedEvents;
 
     if (status === 'loading') {
@@ -170,7 +223,6 @@ export default function Home() {
         );
     }
 
-    // Main UI
     return (
         <div className="container mx-auto p-4 md:p-8">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -189,25 +241,43 @@ export default function Home() {
             </nav>
 
             {view === 'search' && (
-                <div className="max-w-xl mx-auto flex items-center bg-white rounded-full shadow-md p-2 mb-8">
-                    <input 
-                        type="text" 
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        onKeyUp={(e) => e.key === 'Enter' && handleSearch(0)}
-                        placeholder="Enter a city (e.g., Philadelphia)" 
-                        className="w-full bg-transparent p-2 text-gray-700 focus:outline-none"
-                    />
-                    <button onClick={() => handleSearch(0)} disabled={loading} className="bg-blue-600 text-white rounded-full px-6 py-2 font-semibold hover:bg-blue-700 transition duration-200 disabled:bg-blue-300">
-                        {loading ? '...' : 'Search'}
-                    </button>
+                <div ref={searchWrapperRef} className="max-w-xl mx-auto mb-8 relative">
+                    <div className="flex items-center bg-white rounded-full shadow-md p-2">
+                        <input 
+                            type="text" 
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            onFocus={() => setIsInputFocused(true)}
+                            onKeyUp={(e) => e.key === 'Enter' && handleSearch(0)}
+                            placeholder="Enter a city (e.g., Philadelphia)" 
+                            className="w-full bg-transparent p-2 text-gray-700 focus:outline-none"
+                            autoComplete="off"
+                        />
+                        <button onClick={() => handleSearch(0)} disabled={loading} className="bg-blue-600 text-white rounded-full px-6 py-2 font-semibold hover:bg-blue-700 transition duration-200 disabled:bg-blue-300">
+                            {loading ? '...' : 'Search'}
+                        </button>
+                    </div>
+                    {isInputFocused && suggestions.length > 0 && (
+                        <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-lg mt-2 shadow-lg max-h-60 overflow-y-auto">
+                            {suggestions.map((suggestion, index) => (
+                                <li 
+                                    key={index}
+                                    onClick={() => handleSuggestionClick(suggestion)}
+                                    className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                >
+                                    {suggestion}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
             )}
 
             {loading && <div className="text-center text-gray-600 my-8">Finding events...</div>}
             {message && <div className="text-center text-red-500 my-8 font-semibold">{message}</div>}
+            
             {!loading && eventsToDisplay.length === 0 && view === 'saved' && (
-                 <div className="text-center text-gray-600 my-8">You haven't saved any events yet.</div>
+                 <div className="text-center text-gray-600 my-8">You haven&apos;t saved any events yet.</div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

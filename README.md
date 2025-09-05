@@ -5,6 +5,17 @@ A full-stack web application built with Next.js that allows users to search for 
 
 ## Live Demo: [Link](https://effervescent-douhua-f5dbba.netlify.app/)
 
+## Features
+Search by City: Find events in any city with smart autocomplete suggestions.
+
+Events Near Me: Use your device's location to discover events happening around you.
+
+Save Events: Log in with your GitHub account to save and manage a personal list of upcoming events.
+
+Plan Your Night: For any saved event, generate an itinerary with nearby restaurant suggestions to complete your evening.
+
+Pagination: Easily browse through multiple pages of event results.
+
 ## Tech Stack:
 
 Framework: Next.js

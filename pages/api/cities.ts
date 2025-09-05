@@ -1,5 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+// Define a type for the Geoapify feature object
+interface GeoapifyFeature {
+  properties: {
+    formatted: string;
+  };
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { text } = req.query;
 
@@ -18,7 +25,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Failed to fetch from Geoapify API');
     }
     const data = await response.json();
-    const suggestions = data.features.map((feature: any) => feature.properties.formatted);
+    
+    // Use the defined type here
+    const suggestions = data.features.map((feature: GeoapifyFeature) => feature.properties.formatted);
+    
     res.status(200).json(suggestions);
   } catch (error) {
     console.error(error);

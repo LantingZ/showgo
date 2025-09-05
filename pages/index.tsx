@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
-import Link from 'next/link';
+
 
 // --- Type Definition for an Event ---
 type EventType = {

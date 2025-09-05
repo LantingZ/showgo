@@ -1,5 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+// Type for the raw event data from Ticketmaster
+type TicketmasterEvent = {
+    name: string;
+    info?: string;
+    pleaseNote?: string;
+    // This allows for other properties on the object without defining them all
+    [key: string]: unknown;
+};
+
 // Type for the Hugging Face API response
 type HFSentimentResponse = {
     label: 'POSITIVE' | 'NEGATIVE';
@@ -62,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // If there are events and an API key is provided, perform sentiment analysis
         if (events.length > 0 && hfApiKey) {
-            const analysisPromises = events.map(async (event: any) => {
+            const analysisPromises = events.map(async (event: TicketmasterEvent) => {
                 const description = event.info || event.pleaseNote || event.name;
                 
                 try {

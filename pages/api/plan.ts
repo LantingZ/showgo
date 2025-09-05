@@ -1,11 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+// Define a specific type for the Geoapify place feature
+interface GeoapifyPlace {
+  properties: {
+    name: string;
+    address_line2: string;
+  };
+}
+
 const fetchPlaces = async (category: string, lat: string, lon: string, apiKey: string) => {
   const url = `https://api.geoapify.com/v2/places?categories=${category}&filter=circle:${lon},${lat},2000&bias=proximity:${lon},${lat}&limit=3&apiKey=${apiKey}`;
   const response = await fetch(url);
   if (!response.ok) return [];
   const data = await response.json();
-  return data.features.map((place: any) => ({
+  // Use the GeoapifyPlace type for the 'place' parameter
+  return data.features.map((place: GeoapifyPlace) => ({
     name: place.properties.name,
     address: place.properties.address_line2,
   }));

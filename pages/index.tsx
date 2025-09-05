@@ -278,7 +278,7 @@ export default function Home() {
                 {message && <div className="text-center text-red-500 my-8 font-semibold">{message}</div>}
 
                 {!loading && eventsToDisplay.length === 0 && view === 'saved' && (
-                     <div className="text-center text-gray-600 dark:text-gray-400 my-8">You haven't saved any events yet.</div>
+                     <div className="text-center text-gray-600 dark:text-gray-400 my-8">You haven&apos;t saved any events yet.</div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">

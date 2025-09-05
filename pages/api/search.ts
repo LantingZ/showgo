@@ -1,23 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { city, page = '0' } = req.query;
+  const { city, page = '0', latlong } = req.query;
 
-  if (!city || typeof city !== 'string') {
-    return res.status(400).json({ message: 'City parameter is required.' });
+  if (!city && !latlong) {
+    return res.status(400).json({ message: 'A city or latlong parameter is required.' });
   }
 
-  // Date Handling
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const startDateTime = `${year}-${month}-${day}T00:00:00Z`;
+  // Use the current time in ISO format to ensure no past events are shown.
+  const startDateTime = new Date().toISOString().split('.')[0] + "Z";
   
   const apiKey = process.env.TICKETMASTER_API_KEY;
   
-  // Pagination Implementation
-  const url = `https://app.ticketmaster.com/discovery/v2/events.json?city=${encodeURIComponent(city)}&sort=date,asc&startDateTime=${startDateTime}&size=20&page=${page}&apikey=${apiKey}`;
+  let url: string;
+  if (latlong) {
+    url = `https://app.ticketmaster.com/discovery/v2/events.json?latlong=${latlong}&sort=date,asc&startDateTime=${startDateTime}&size=20&page=${page}&apikey=${apiKey}`;
+  } else {
+    url = `https://app.ticketmaster.com/discovery/v2/events.json?city=${encodeURIComponent(city as string)}&sort=date,asc&startDateTime=${startDateTime}&size=20&page=${page}&apikey=${apiKey}`;
+  }
 
   try {
     const response = await fetch(url);
@@ -27,7 +27,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Failed to fetch from Ticketmaster API');
     }
     const data = await response.json();
-
 
     res.status(200).json({
       events: data._embedded?.events || [],
@@ -39,5 +38,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ message: 'Internal Server Error' });
   }
 }
-
-// date is still off

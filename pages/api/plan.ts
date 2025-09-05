@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Define a specific type for the Geoapify place feature
 interface GeoapifyPlace {
   properties: {
     name: string;
@@ -30,12 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const apiKey = process.env.GEOAPIFY_API_KEY as string;
 
   try {
-    const [restaurants, bars] = await Promise.all([
-      fetchPlaces('catering.restaurant', lat, lon, apiKey),
-      fetchPlaces('entertainment.bar,entertainment.pub', lat, lon, apiKey),
-    ]);
-
-    res.status(200).json({ restaurants, bars });
+    const restaurants = await fetchPlaces('catering.restaurant', lat, lon, apiKey);
+    res.status(200).json({ restaurants });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });

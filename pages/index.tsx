@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
 
-// --- Type Definition for an Event ---
 type EventType = {
     id: string;
     name: string;
@@ -20,25 +19,21 @@ type EventType = {
     };
 };
 
-// --- Type for Pagination Info ---
 type PageInfo = {
     totalPages: number;
-    number: number; // Current page number (0-indexed)
+    number: number;
 };
 
-// --- Type for a Place ---
 type Place = {
     name: string;
     address: string;
 };
 
-// --- Type for Itinerary Data ---
 type ItineraryData = {
     restaurants: Place[];
-    bars: Place[];
 };
 
-// --- NEW Itinerary Modal Component ---
+// Itinerary Modal
 const ItineraryModal = ({ event, onClose }: { event: EventType, onClose: () => void }) => {
     const [itinerary, setItinerary] = useState<ItineraryData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -48,8 +43,8 @@ const ItineraryModal = ({ event, onClose }: { event: EventType, onClose: () => v
             const venue = event._embedded?.venues[0];
             if (!venue?.location) {
                 setLoading(false);
-                return
-            };
+                return;
+            }
 
             const { latitude, longitude } = venue.location;
             const res = await fetch(`/api/plan?lat=${latitude}&lon=${longitude}`);
@@ -65,24 +60,16 @@ const ItineraryModal = ({ event, onClose }: { event: EventType, onClose: () => v
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-2xl">
-                <h2 className="font-bold text-2xl mb-2">Your Plan for {event.name}</h2>
+                <h2 className="font-bold text-2xl mb-2">Plan Your Night for {event.name}</h2>
                 <p className="text-gray-600 mb-4">{new Date(event.dates.start.localDate).toDateString()}</p>
                 {loading ? (
-                    <p className="text-center text-gray-600">Finding places nearby...</p>
+                    <p className="text-center text-gray-600">Finding restaurants nearby...</p>
                 ) : itinerary ? (
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="font-semibold text-lg">Dinner Before 🍔</h3>
-                            {itinerary.restaurants.length > 0 ? (
-                                <ul className="list-disc list-inside space-y-1 mt-1">{itinerary.restaurants.map(r => <li key={r.name} className="text-sm">{r.name} - <span className="text-gray-500">{r.address}</span></li>)}</ul>
-                            ) : <p className="text-sm text-gray-500">No restaurants found nearby.</p>}
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-lg">Drinks After 🍻</h3>
-                             {itinerary.bars.length > 0 ? (
-                                <ul className="list-disc list-inside space-y-1 mt-1">{itinerary.bars.map(b => <li key={b.name} className="text-sm">{b.name} - <span className="text-gray-500">{b.address}</span></li>)}</ul>
-                            ) : <p className="text-sm text-gray-500">No bars found nearby.</p>}
-                        </div>
+                    <div>
+                        <h3 className="font-semibold text-lg">Dinner Before 🍔</h3>
+                        {itinerary.restaurants.length > 0 ? (
+                            <ul className="list-disc list-inside space-y-1 mt-1">{itinerary.restaurants.map(r => <li key={r.name} className="text-sm">{r.name} - <span className="text-gray-500">{r.address}</span></li>)}</ul>
+                        ) : <p className="text-sm text-gray-500">No restaurants found nearby.</p>}
                     </div>
                 ) : <p className="text-sm text-gray-500">Could not retrieve itinerary information.</p>}
                 <button onClick={onClose} className="mt-6 w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg hover:bg-gray-300 transition-colors">Close</button>
@@ -92,7 +79,7 @@ const ItineraryModal = ({ event, onClose }: { event: EventType, onClose: () => v
 };
 
 
-// --- EventCard Component ---
+// EventCard
 const EventCard = ({ event, onSave, onUnsave, isSaved, onPlan }: { event: EventType, onSave: (event: EventType) => void, onUnsave: (eventId: string) => void, isSaved: boolean, onPlan: (event: EventType) => void }) => {
     const imageUrl = event.images?.find(img => img.ratio === '16_9')?.url || event.images?.[0]?.url || 'https://placehold.co/600x400/e2e8f0/4a5568?text=No+Image';
     const eventDate = new Date(event.dates.start.localDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -134,7 +121,7 @@ const EventCard = ({ event, onSave, onUnsave, isSaved, onPlan }: { event: EventT
     );
 };
 
-// --- Main Home Page Component ---
+// Main Home Page
 export default function Home() {
     const { data: session, status } = useSession();
     const [view, setView] = useState('search');
@@ -151,7 +138,7 @@ export default function Home() {
     const [isInputFocused, setIsInputFocused] = useState(false);
     const searchWrapperRef = useRef<HTMLDivElement>(null);
 
-    const [planningEvent, setPlanningEvent] = useState<EventType | null>(null); // State for the modal
+    const [planningEvent, setPlanningEvent] = useState<EventType | null>(null);
 
     useEffect(() => {
         if (city.length < 3 || !isInputFocused) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // --- Type Definition for an Event ---
 type EventType = {
@@ -27,27 +28,27 @@ const EventCard = ({ event, onSave, onUnsave, isSaved }: { event: EventType, onS
     const venueName = event._embedded?.venues[0]?.name || 'Venue TBD';
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl flex flex-col transition-all duration-300 transform hover:-translate-y-1">
-            <div className="relative w-full h-48">
-                <Image
-                    src={imageUrl}
-                    alt={event.name}
+        <div className="bg-white rounded-lg overflow-hidden shadow-md flex flex-col transition-transform transform hover:-translate-y-1">
+            <div className="relative w-full h-40">
+                <Image 
+                    src={imageUrl} 
+                    alt={event.name} 
                     layout="fill"
                     objectFit="cover"
-                    onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/e2e8f0/4a5568?text=No+Image'; }}
+                    onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/e2e8f0/4a5568?text=No+Image'; }} 
                 />
             </div>
-            <div className="p-5 flex-grow flex flex-col">
-                <h3 className="font-bold text-xl mb-2 truncate text-gray-900 dark:text-white" title={event.name}>{event.name}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">{eventDate}</p>
-                <p className="text-gray-700 dark:text-gray-300 text-sm font-medium truncate" title={venueName}>{venueName}</p>
+            <div className="p-4 flex-grow flex flex-col">
+                <h3 className="font-bold text-lg mb-1 truncate" title={event.name}>{event.name}</h3>
+                <p className="text-gray-600 text-sm mb-2">{eventDate}</p>
+                <p className="text-gray-700 text-sm font-medium truncate" title={venueName}>{venueName}</p>
                 <div className="mt-auto pt-4 flex items-center justify-between">
-                    <a href={event.url} target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-300">
+                    <a href={event.url} target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full hover:bg-blue-200">
                         Tickets
                     </a>
-                    <button
+                    <button 
                         onClick={() => isSaved ? onUnsave(event.id) : onSave(event)}
-                        className={`relative z-10 text-sm font-semibold px-4 py-2 rounded-full transition-colors duration-300 ${isSaved ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                        className={`relative z-10 text-sm font-semibold px-3 py-1 rounded-full ${isSaved ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800'}`}
                     >
                         {isSaved ? 'Unsave' : 'Save'}
                     </button>
@@ -66,7 +67,7 @@ export default function Home() {
     const [city, setCity] = useState('Philadelphia');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-
+    
     const [pageInfo, setPageInfo] = useState<PageInfo>({ totalPages: 0, number: 0 });
     const [currentPage, setCurrentPage] = useState(0);
 
@@ -133,7 +134,7 @@ export default function Home() {
 
         const res = await fetch(`/api/search?city=${cityToSearch}&page=${page}`);
         const data = await res.json();
-
+        
         setLoading(false);
 
         if (data.events && data.events.length > 0) {
@@ -205,12 +206,12 @@ export default function Home() {
 
     if (!session) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-                <div className="max-w-md w-full bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-8 text-center">
-                    <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-2">ShowGo 🎤</h1>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8">Find and save upcoming events in your city.</p>
-                    <button
-                        onClick={() => signIn('github')}
+            <div className="min-h-screen flex items-center justify-center bg-gray-50" style={{backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"}}>
+                <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 text-center">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">ShowGo 🎤</h1>
+                    <p className="text-gray-600 mb-8">Find and save upcoming events in your city.</p>
+                    <button 
+                        onClick={() => signIn('github')} 
                         className="w-full inline-flex justify-center items-center bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-900 transition-transform transform hover:scale-105"
                     >
                         <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -224,97 +225,95 @@ export default function Home() {
     }
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-            <div className="container mx-auto p-4 md:p-8">
-                <header className="flex flex-col md:flex-row justify-between items-center mb-10">
-                    <div>
-                        <h1 className="text-5xl font-bold text-gray-900 dark:text-white">ShowGo 🎤</h1>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">Welcome, {session.user.name}!</p>
-                    </div>
-                    <button onClick={() => signOut()} className="bg-red-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-red-600 transition-colors mt-4 md:mt-0">
-                        Sign Out
-                    </button>
-                </header>
-
-                <nav className="flex justify-center mb-8 bg-white dark:bg-gray-800 p-2 rounded-full shadow-md max-w-sm mx-auto">
-                    <button onClick={() => setView('search')} className={`w-1/2 text-center py-2 px-4 rounded-full font-semibold transition-colors duration-300 ${view === 'search' ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300'}`}>Search Events</button>
-                    <button onClick={() => setView('saved')} className={`w-1/2 text-center py-2 px-4 rounded-full font-semibold transition-colors duration-300 ${view === 'saved' ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300'}`}>My Saved Events</button>
-                </nav>
-
-                {view === 'search' && (
-                    <div ref={searchWrapperRef} className="max-w-xl mx-auto mb-8 relative">
-                        <div className="flex items-center bg-white dark:bg-gray-800 rounded-full shadow-md p-2">
-                            <input
-                                type="text"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                onFocus={() => setIsInputFocused(true)}
-                                onKeyUp={(e) => e.key === 'Enter' && handleSearch(city, 0)}
-                                placeholder="Enter a city (e.g., Philadelphia)"
-                                className="w-full bg-transparent p-2 text-gray-700 dark:text-gray-200 focus:outline-none"
-                                autoComplete="off"
-                            />
-                            <button onClick={() => handleSearch(city, 0)} disabled={loading} className="bg-blue-600 text-white rounded-full px-6 py-2 font-semibold hover:bg-blue-700 transition duration-200 disabled:bg-blue-300">
-                                {loading ? '...' : 'Search'}
-                            </button>
-                        </div>
-                        {isInputFocused && suggestions.length > 0 && (
-                            <ul className="absolute z-20 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mt-2 shadow-lg max-h-60 overflow-y-auto">
-                                {suggestions.map((suggestion, index) => (
-                                    <li
-                                        key={index}
-                                        onClick={() => handleSuggestionClick(suggestion)}
-                                        className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
-                                    >
-                                        {suggestion}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                )}
-
-                {loading && <div className="text-center text-gray-600 dark:text-gray-400 my-8">Finding events...</div>}
-                {message && <div className="text-center text-red-500 my-8 font-semibold">{message}</div>}
-
-                {!loading && eventsToDisplay.length === 0 && view === 'saved' && (
-                     <div className="text-center text-gray-600 dark:text-gray-400 my-8">You haven&apos;t saved any events yet.</div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                    {eventsToDisplay.map(event => (
-                        <EventCard
-                            key={event.id}
-                            event={event}
-                            onSave={handleSave}
-                            onUnsave={handleUnsave}
-                            isSaved={isEventSaved(event.id)}
-                        />
-                    ))}
+        <div className="container mx-auto p-4 md:p-8">
+            <header className="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-4xl font-bold text-gray-900">ShowGo 🎤</h1>
+                    <p className="text-lg text-gray-600 mt-1">Welcome, {session.user.name}!</p>
                 </div>
+                <button onClick={() => signOut()} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors mt-4 md:mt-0">
+                    Sign Out
+                </button>
+            </header>
 
-                {view === 'search' && !loading && eventsToDisplay.length > 0 && (
-                    <div className="flex justify-center items-center mt-10 space-x-4">
-                        <button
-                            onClick={() => handleSearch(city, currentPage - 1)}
-                            disabled={currentPage === 0}
-                            className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Previous
-                        </button>
-                        <span className="text-gray-600 dark:text-gray-400">
-                            Page {currentPage + 1} of {pageInfo.totalPages}
-                        </span>
-                        <button
-                            onClick={() => handleSearch(city, currentPage + 1)}
-                            disabled={currentPage + 1 >= pageInfo.totalPages}
-                            className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Next
+            <nav className="flex justify-center mb-8 bg-white p-2 rounded-full shadow-md max-w-sm mx-auto">
+                <button onClick={() => setView('search')} className={`w-1/2 text-center py-2 px-4 rounded-full font-semibold transition-colors duration-200 ${view === 'search' ? 'bg-indigo-600 text-white' : ''}`}>Search Events</button>
+                <button onClick={() => setView('saved')} className={`w-1/2 text-center py-2 px-4 rounded-full font-semibold transition-colors duration-200 ${view === 'saved' ? 'bg-indigo-600 text-white' : ''}`}>My Saved Events</button>
+            </nav>
+
+            {view === 'search' && (
+                <div ref={searchWrapperRef} className="max-w-xl mx-auto mb-8 relative">
+                    <div className="flex items-center bg-white rounded-full shadow-md p-2">
+                        <input 
+                            type="text" 
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            onFocus={() => setIsInputFocused(true)}
+                            onKeyUp={(e) => e.key === 'Enter' && handleSearch(city, 0)}
+                            placeholder="Enter a city (e.g., Philadelphia)" 
+                            className="w-full bg-transparent p-2 text-gray-700 focus:outline-none"
+                            autoComplete="off"
+                        />
+                        <button onClick={() => handleSearch(city, 0)} disabled={loading} className="bg-blue-600 text-white rounded-full px-6 py-2 font-semibold hover:bg-blue-700 transition duration-200 disabled:bg-blue-300">
+                            {loading ? '...' : 'Search'}
                         </button>
                     </div>
-                )}
+                    {isInputFocused && suggestions.length > 0 && (
+                        <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-lg mt-2 shadow-lg max-h-60 overflow-y-auto">
+                            {suggestions.map((suggestion, index) => (
+                                <li 
+                                    key={index}
+                                    onClick={() => handleSuggestionClick(suggestion)}
+                                    className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                >
+                                    {suggestion}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
+
+            {loading && <div className="text-center text-gray-600 my-8">Finding events...</div>}
+            {message && <div className="text-center text-red-500 my-8 font-semibold">{message}</div>}
+            
+            {!loading && eventsToDisplay.length === 0 && view === 'saved' && (
+                 <div className="text-center text-gray-600 my-8">You haven&apos;t saved any events yet.</div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {eventsToDisplay.map(event => (
+                    <EventCard 
+                        key={event.id} 
+                        event={event} 
+                        onSave={handleSave}
+                        onUnsave={handleUnsave}
+                        isSaved={isEventSaved(event.id)}
+                    />
+                ))}
             </div>
+
+            {view === 'search' && !loading && eventsToDisplay.length > 0 && (
+                <div className="flex justify-center items-center mt-8 space-x-4">
+                    <button 
+                        onClick={() => handleSearch(city, currentPage - 1)} 
+                        disabled={currentPage === 0}
+                        className="bg-white text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-gray-600">
+                        Page {currentPage + 1} of {pageInfo.totalPages}
+                    </span>
+                    <button 
+                        onClick={() => handleSearch(city, currentPage + 1)} 
+                        disabled={currentPage + 1 >= pageInfo.totalPages}
+                        className="bg-white text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
 
-
 // --- Type Definition for an Event ---
 type EventType = {
     id: string;
@@ -11,7 +10,13 @@ type EventType = {
     images: { ratio: string; url: string; }[];
     dates: { start: { localDate: string; } };
     _embedded?: {
-        venues: { name: string; }[];
+        venues: { 
+            name: string;
+            location?: {
+                latitude: string;
+                longitude: string;
+            };
+        }[];
     };
 };
 
@@ -21,11 +26,78 @@ type PageInfo = {
     number: number; // Current page number (0-indexed)
 };
 
+// --- Type for a Place ---
+type Place = {
+    name: string;
+    address: string;
+};
+
+// --- Type for Itinerary Data ---
+type ItineraryData = {
+    restaurants: Place[];
+    bars: Place[];
+};
+
+// --- NEW Itinerary Modal Component ---
+const ItineraryModal = ({ event, onClose }: { event: EventType, onClose: () => void }) => {
+    const [itinerary, setItinerary] = useState<ItineraryData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchItinerary = async () => {
+            const venue = event._embedded?.venues[0];
+            if (!venue?.location) {
+                setLoading(false);
+                return
+            };
+
+            const { latitude, longitude } = venue.location;
+            const res = await fetch(`/api/plan?lat=${latitude}&lon=${longitude}`);
+            if (res.ok) {
+                const data = await res.json();
+                setItinerary(data);
+            }
+            setLoading(false);
+        };
+        fetchItinerary();
+    }, [event]);
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-2xl">
+                <h2 className="font-bold text-2xl mb-2">Your Plan for {event.name}</h2>
+                <p className="text-gray-600 mb-4">{new Date(event.dates.start.localDate).toDateString()}</p>
+                {loading ? (
+                    <p className="text-center text-gray-600">Finding places nearby...</p>
+                ) : itinerary ? (
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="font-semibold text-lg">Dinner Before 🍔</h3>
+                            {itinerary.restaurants.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 mt-1">{itinerary.restaurants.map(r => <li key={r.name} className="text-sm">{r.name} - <span className="text-gray-500">{r.address}</span></li>)}</ul>
+                            ) : <p className="text-sm text-gray-500">No restaurants found nearby.</p>}
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-lg">Drinks After 🍻</h3>
+                             {itinerary.bars.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 mt-1">{itinerary.bars.map(b => <li key={b.name} className="text-sm">{b.name} - <span className="text-gray-500">{b.address}</span></li>)}</ul>
+                            ) : <p className="text-sm text-gray-500">No bars found nearby.</p>}
+                        </div>
+                    </div>
+                ) : <p className="text-sm text-gray-500">Could not retrieve itinerary information.</p>}
+                <button onClick={onClose} className="mt-6 w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg hover:bg-gray-300 transition-colors">Close</button>
+            </div>
+        </div>
+    );
+};
+
+
 // --- EventCard Component ---
-const EventCard = ({ event, onSave, onUnsave, isSaved }: { event: EventType, onSave: (event: EventType) => void, onUnsave: (eventId: string) => void, isSaved: boolean }) => {
+const EventCard = ({ event, onSave, onUnsave, isSaved, onPlan }: { event: EventType, onSave: (event: EventType) => void, onUnsave: (eventId: string) => void, isSaved: boolean, onPlan: (event: EventType) => void }) => {
     const imageUrl = event.images?.find(img => img.ratio === '16_9')?.url || event.images?.[0]?.url || 'https://placehold.co/600x400/e2e8f0/4a5568?text=No+Image';
     const eventDate = new Date(event.dates.start.localDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const venueName = event._embedded?.venues[0]?.name || 'Venue TBD';
+    const hasLocation = !!event._embedded?.venues?.[0]?.location;
 
     return (
         <div className="bg-white rounded-lg overflow-hidden shadow-md flex flex-col transition-transform transform hover:-translate-y-1">
@@ -46,12 +118,16 @@ const EventCard = ({ event, onSave, onUnsave, isSaved }: { event: EventType, onS
                     <a href={event.url} target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full hover:bg-blue-200">
                         Tickets
                     </a>
-                    <button 
-                        onClick={() => isSaved ? onUnsave(event.id) : onSave(event)}
-                        className={`relative z-10 text-sm font-semibold px-3 py-1 rounded-full ${isSaved ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800'}`}
-                    >
-                        {isSaved ? 'Unsave' : 'Save'}
-                    </button>
+                    {isSaved ? (
+                        <div className="flex items-center space-x-2">
+                             {hasLocation && (
+                                <button onClick={() => onPlan(event)} className="text-sm font-semibold px-3 py-1 rounded-full bg-green-100 text-green-800 hover:bg-green-200">Plan</button>
+                             )}
+                            <button onClick={() => onUnsave(event.id)} className="text-sm font-semibold px-3 py-1 rounded-full bg-indigo-600 text-white hover:bg-indigo-700">Unsave</button>
+                        </div>
+                    ) : (
+                        <button onClick={() => onSave(event)} className="text-sm font-semibold px-3 py-1 rounded-full bg-gray-200 text-gray-800 hover:bg-gray-300">Save</button>
+                    )}
                 </div>
             </div>
         </div>
@@ -74,6 +150,8 @@ export default function Home() {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isInputFocused, setIsInputFocused] = useState(false);
     const searchWrapperRef = useRef<HTMLDivElement>(null);
+
+    const [planningEvent, setPlanningEvent] = useState<EventType | null>(null); // State for the modal
 
     useEffect(() => {
         if (city.length < 3 || !isInputFocused) {
@@ -289,6 +367,7 @@ export default function Home() {
                         onSave={handleSave}
                         onUnsave={handleUnsave}
                         isSaved={isEventSaved(event.id)}
+                        onPlan={setPlanningEvent}
                     />
                 ))}
             </div>
@@ -314,6 +393,8 @@ export default function Home() {
                     </button>
                 </div>
             )}
+            
+            {planningEvent && <ItineraryModal event={planningEvent} onClose={() => setPlanningEvent(null)} />}
         </div>
     );
 }
